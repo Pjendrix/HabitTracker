@@ -6,9 +6,13 @@ Funguje samostatně; Excel je volitelný vstup i výstup.
 
 ## Rozjetí
 
+Klíče z Firebase console (Project settings → Your apps → SDK setup → Config) vlož přímo
+do `src/firebase.js`. Nejsou tajné — přístup k datům hlídají Firestore pravidla, ne utajení
+klíče — takže můžou být v repu a hosting (Vercel, Firebase Hosting) nepotřebuje žádné
+proměnné prostředí.
+
 ```bash
 npm install
-cp .env.example .env        # doplň klíče z Firebase console → Project settings → Web app
 npm run dev
 ```
 
@@ -24,20 +28,18 @@ npm run deploy              # build + hosting
 
 ## Import historie z Excelu
 
+V appce: **Nastavení → Import z Excelu** → vyber soubor. Zpracuje se v prohlížeči, ukáže
+náhled (kolik listů, dní, jaký rozsah) a teprve po potvrzení zapíše pod tvůj účet.
+Pouštět se dá opakovaně — stejné dny přepíše, zbytek nechá být.
+
+Ověřeno na tvém sešitu: 87 měsíčních listů, 2 194 dní, 2019-07 až 2026-09. Parser sám pozná,
+že do konce 2024 byly částky v CZK a od 2025 v EUR (podle hlavičky G3), že se sport přesunul
+ze sloupce P do N, a výplatu si dotáhne z listů `20XX summary`, kde jediná je.
+
+Totéž jde i z příkazové řádky, když chceš data jen zkontrolovat:
+
 ```bash
-node scripts/import-xlsx.mjs ../HABIT_TRACKER_2026.xlsx
-```
-
-Vyrobí `seed.json` (kontrola bez zápisu). Ověřeno na tvém sešitu: 87 měsíčních listů,
-2 255 dní, 2019-07 až 2026-09. Skript sám pozná, že do konce 2024 byly všechny částky
-v CZK a od 2025 v EUR (podle hlavičky G3), a že se sport přesunul ze sloupce P do N.
-
-Nahrání do Firestore:
-
-```bash
-npm i -D firebase-admin
-# serviceAccount.json ulož do kořene projektu (Project settings → Service accounts)
-node scripts/import-xlsx.mjs ../HABIT_TRACKER_2026.xlsx --upload --uid=TVOJE_UID
+node scripts/import-xlsx.mjs ../HABIT_TRACKER_2026.xlsx   # vyrobí seed.json, nic nezapíše
 ```
 
 ## Export zpátky do Excelu
@@ -84,6 +86,7 @@ src/
   firebase.js          inicializace SDK (+ offline cache)
   lib/model.js         datový model, měny, výpočty (streak, tempo rozpočtu)
   lib/store.js         Firestore hooky (settings, days, month, portfolio)
+  lib/importXlsx.js    parser sešitu (sdílí ho appka i skript)
   lib/exportXlsx.js    export měsíce do rozvržení Excelu
   views/Today.jsx      rychlý zápis, denní přehled, návyky, váha
   views/Month.jsx      kalendář, kategorie vs. plán, návyky, export
