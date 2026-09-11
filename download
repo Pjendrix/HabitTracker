@@ -1,0 +1,5 @@
+node_modules
+dist
+.env
+seed.json
+serviceAccount.json
